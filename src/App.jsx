@@ -29,12 +29,11 @@ function App() {
     if (!checkInp) return
     fetch(`${endpoint}${value}`,{ 
       headers: {
-        Authorization: `token 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`,
+        Authorization: `token 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`,
       }
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data)
       if (data.items.length) {
         setUsersList(data.items)
         setIsLoaded(true)
