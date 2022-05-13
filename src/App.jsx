@@ -27,9 +27,14 @@ function App() {
     const checkInp = regex.test(inpValue);
 
     if (!checkInp) return
-    fetch(`${endpoint}${value}`)
+    fetch(`${endpoint}${value}`,{ 
+      headers: {
+        Authorization: `token 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`,
+      }
+    })
     .then(res => res.json())
     .then(data => {
+      console.log(data)
       if (data.items.length) {
         setUsersList(data.items)
         setIsLoaded(true)
