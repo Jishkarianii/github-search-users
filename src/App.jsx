@@ -1,22 +1,27 @@
 import './App.css'
 import { useEffect, useState, useRef } from 'react';
 import UserItem from './components/UserItem';
+import Spinner from './components/Spinner';
 
 const endpoint = "https://api.github.com/search/users?q=";
 
+const typingDelay = 500;
 let isLimitExceeded = false;
+let timeInterval;
 
 function App() {
   const [inpValue, setInpValue] = useState("")
   const [usersList, setUsersList] = useState([])
   const [isLoaded, setIsLoaded] = useState(false)
   const [isExceeded, setIsExceeded] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const inputEl = useRef(null);
 
   useEffect(() => {
-    if (inpValue && !isLimitExceeded) {
-      getSearchResults(inpValue)
-    } else {
+    if (isLimitExceeded) return
+    typingDelayHendler()
+
+    if (inpValue.length === 0) {
       setIsLoaded(false)
     }
   }, [inpValue])
@@ -29,7 +34,7 @@ function App() {
     if (!checkInp) return
     fetch(`${endpoint}${value}`,{ 
       headers: {
-        Authorization: `token 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`,
+        Authorization: `token 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`,
       }
     })
     .then(res => res.json())
@@ -59,7 +64,7 @@ function App() {
     const setTimer = setInterval(() => {
       setInpValue(`Please wait ${timer} seconds..`)
       
-      // When time out
+      // When time is out
       if (timer === 0) {
         isLimitExceeded = false;
         setInpValue(tempinpValue)
@@ -80,7 +85,19 @@ function App() {
     if (!isLoaded) return 
     window.open(usersList[0].html_url, '_blank').focus();
   }
-  
+
+  const typingDelayHendler = () => {
+    setIsTyping(true)
+    clearInterval(timeInterval)
+    
+    // This timer check if user is typing
+    timeInterval = setInterval(() => {
+      setIsTyping(false)
+      getSearchResults(inpValue)
+      clearInterval(timeInterval)
+    }, typingDelay);
+  }
+
   return (
     <div className="App">
       <header>
@@ -100,18 +117,24 @@ function App() {
           />
           {isLoaded && (
             <div className='users-list'>
-                {usersList.map((user, idx) => {
-                  if (idx < 10) {
-                    return (
-                      <UserItem 
-                        key={user.id}
-                        img={user.avatar_url}
-                        userName={user.login}
-                        url={user.html_url}
-                      />
-                    )
-                  }
-                })}
+              {isTyping ? (
+                <Spinner />
+              ) : (
+                <>
+                  {usersList.map((user, idx) => {
+                    if (idx < 10) {
+                      return (
+                        <UserItem 
+                          key={user.id}
+                          img={user.avatar_url}
+                          userName={user.login}
+                          url={user.html_url}
+                        />
+                      )
+                    }
+                  })}
+                </>
+              )}
             </div>
           )}
         </form>
